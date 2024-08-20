@@ -1,0 +1,585 @@
+\documentclass[twocolumn,twoside,journal]{IEEEtran} 
+
+\usepackage{cite}
+\usepackage{graphicx}
+\usepackage{dblfloatfix}
+\usepackage{amsthm}
+\usepackage{amsmath} 
+\usepackage{amssymb}  
+\usepackage{amsfonts}
+\usepackage{mathrsfs}
+\usepackage{mathtools}
+\usepackage[bbgreekl]{mathbbol}
+\usepackage{multirow}
+\usepackage{makecell}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{caption}
+\usepackage{xcolor}
+\usepackage{xpatch}
+\usepackage{enumitem}
+
+
+
+
+
+\DeclareSymbolFontAlphabet{\mathbb}{AMSb}
+\DeclareSymbolFontAlphabet{\mathbbl}{bbold}
+
+
+\DeclareMathOperator{\diag}{diag}
+\DeclareMathOperator{\rank}{rank}
+\DeclareMathOperator{\blkdiag}{blkdiag}
+\DeclareMathOperator{\tr}{trace}
+\DeclareMathOperator{\diff}{d}
+\DeclareMathOperator*{\range}{range}
+\DeclareMathOperator*{\argmin}{argmin}
+\DeclareMathOperator*{\minimize}{minimize}
+\DeclareMathOperator*{\maximize}{maximize}
+\DeclareMathOperator*{\subject}{subject~to}
+\DeclareMathOperator{\Rank}{rank}
+\DeclareMathOperator{\Ima}{Im}
+\DeclareMathOperator{\vspan}{span}
+
+\newcommand{\mc}{\mathcal}
+\newcommand{\ddt}{\tfrac{\diff}{\diff \!t}}
+\newcommand{\norm}[1]{\left \lVert #1 \right \rVert}
+
+\makeatletter
+\xpatchcmd{\@thm}{\thm@headpunct{.}}{\thm@headpunct{}}{}{}
+\makeatother
+
+
+\newcommand\red[1]{{\color{red}#1}}
+\newcommand\blue[1]{{\color{blue}#1}}
+
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}{Lemma}
+\newtheorem{proposition}{Proposition}
+\newtheorem{assumption}{Assumption}
+\newtheorem{remark}{Remark}
+\newtheorem{definition}{Definition}
+\newtheorem{condition}{Condition}
+\newtheorem{example}{Example}
+\newtheorem{corollary}{Corollary}
+\newtheorem{property}{Property}
+
+
+
+
+\title{\LARGE \bf  Stability analysis of power limting droop control}
+
+\author{Amirhossein Iraniparast and Dominic Gro\ss}
+
+\begin{document}
+\maketitle
+
+\begin{abstract} 
+\end{abstract}
+\section{Introduction}
+
+
+\subsection*{Notation}
+We use $\mathbb{R}$ and $\mathbb N$ to denote the set of real and natural numbers and define, e.g., $\mathbb{R}_{\geq 0}\coloneqq \{x \in \mathbb R \vert x \geq 0\}$. Moreover, we use $\mathbb{S}_{\succ 0}^n$ and $\mathbb{S}_{\succeq 0}^n$ to denote the set of real positive definite and positive semidefinite matrices. For column vectors $x\in\mathbb{R}^n$ and $y\in\mathbb{R}^m$ we define $(x,y) = [x^\mathsf{T}, y^\mathsf{T}]^\mathsf{T} \in \mathbb{R}^{n+m}$. Moreover, $\norm{x}=\sqrt{x^\mathsf{T} x}$ denotes the Euclidean norm and $\norm{x}_{\mc C} \coloneqq \min_{z\in\mc C} \norm{z-x}$ denotes the point to set distance. Furthermore, $I_n$, $\mathbbl{0}_{n\times m}$, $\mathbbl{0}_{n}$, and $\mathbbl{1}_n$ denote the $n$-dimensional identity matrix, $n \times m$ zero matrix, and column vectors of zeros and ones of length $n$. The cardinality of a discrete set $\mc X$ is denoted by $|\mc X|$. The Kronecker product is denoted by $\otimes$. We use $\varphi(t,x_0)$ to denote a (Caratheodory) solution of $\ddt x = f(x)$ at time $t \in \mathbb{R}_{\geq 0}$ starting from $x_0$ at time $t=0$.
+
+\section{Network model and converter control}
+    In this section, we introduce the ac power network model, converter model, and converter control that will be considered throughout the paper.
+
+    \subsection{Power network and converter model}
+    Consider an ac power network modeled by a simple, connected and undirected graph $\mathcal{G}\coloneqq \{\mathcal{N}, \mathcal{E}, \mathcal{W}\}$ with edge set $\mathcal{E}\coloneqq\mathcal{N}\times\mathcal{N}$ corresponding to $|\mathcal{E}|=e$ transmission lines, set of nodes $\mathcal{N}$ corresponding to $|\mathcal{N}|=n$ voltage source converters, and edge weights $\mathcal{W}=\left\{w_1, \ldots, w_e\right\}$. Throughout this work, we assume that the network is lossless, modeled through by Kron-reduced graph~\cite{DB2013}. Moreover, we model each voltage source converter $i \in \mathcal{N}$ as a voltage source imposing an ac voltage with phase angle $\theta_i \in \mathbb{R}$ relative to a reference frame rotating with the nominal frequency $\omega_0 \in \mathbb{R}_{>0}$ that injects an active power denoted by $P_i \in \mathbb{R}$. Finally, for every $i \in \mathcal{N}$, we use $P_{L, i} \in \mathbb{R}$, to denote active power loads mapped from the load nodes (i.e., nodes eliminated by applying Kron reduction) to the converter nodes using Kron reduction~\cite{DB2013}.
+    
+    Linearizing the (quasi-steady-state) ac power flow equation at the nominal voltage magnitude and zero angle difference between the nodes, results in the converter power injection
+    \begin{align*}\label{eq:dcpfeq}
+        P \coloneqq L\theta + P_{L}, 
+    \end{align*}
+    where $L\coloneqq BWB^\mathsf{T}$ is the Laplacian matrix of the graph $\mc G$, $B \in {-1,0,1}^{n \times e}$ denotes the oriented incidence matrix of $\mc G$~\cite{LNS}, and $W=\diag\{w_i\}_{i\in\mc N}$ denotes the matrix of edge weights. Moreover, $\theta = \left(\theta_1, \ldots, \theta_n\right) \in \mathbb{R}^n$ is the vector of ac voltage phase angles (relative to $\omega_0 t$), $P_{L} \coloneqq \left(P_{L,1}, \ldots, P_{L, n}\right) \in \mathbb{R}^n$ is the vector of active power loads at every node, and $P = \left(P_1, \ldots, P_n\right) \in \mathbb{R}^n$ is the vector of converter power injections.
+
+\subsection{Review of droop control and power limiting droop control}
+Power limiting droop control~\cite{PL2006,DLK2019} shown in Fig.~\ref{fig:plim} uses a measurement of the converter power injection $P_i \in \mathbb{R}$ to determine the frequency $\omega_i = \ddt \theta_i \in \mathbb{R}$ (relative to the nominal frequency $\omega_0$) of the ac voltage imposed at the converter bus. Notably, power limiting droop control combines the widely studied (proportional) $P-f$ droop control~\cite{CDA1993,RLB2012,SDB2013} with (nonlinear) PI controls that aim to maintain converter power injection $P_i \in \mathbb{R}$ within lower and upper limits $P_{\ell, i} \in \mathbb{R}$ and $P_{u, i} \in \mathbb{R}$. 
+%
+\begin{figure}[htbp]
+    \begin{center}
+        % \vspace*{-1em}
+        \includegraphics[width=1\columnwidth]{droopfig.pdf}
+        \caption{Power limiting droop control configuration}%Need to add zeros and inf to the limits.
+        \label{fig:plim}
+    \end{center}
+\end{figure}
+%
+Notably, when no power limit is active (i.e., $P_{\ell,i} < P_i < P_{u,i}$), power limiting droop control reduces to well-known (proportional) $P-f$ droop control~\cite{CDA1993} that changes the frequency $\omega_i$ in proportion to the deviation of $P_i\in\mathbb{R}$ from the converter power setpoint $P^\star_i\in\mathbb{R}$ to control the converter power injection~\cite[Sec.~IV-C]{RLB2012} and enable parallel operation~\cite{CDA1993} of grid-forming converters. We emphasize that, in general, the load $P_L \in \mathbb{R}$ is not known and the sum of the power setpoints does not match the load (i.e., $\sum_{i\in\mc N} P_i = \sum_{i\in\mc N} P_{L,i}$). In this setting, the control objective is to render a synchronous solution (i.e., $\omega_i=\omega_j$ for all $(i,j) \in \mc N \times \mc N$) stable while sharing any additional load between the converters according to the ratio of droop coefficients $m_i \in \mathbb{R}_{>0}$ (see, e.g., \cite{SDB2013}).
+
+While $P-f$ droop control achieves these objectives under mild assumptions~\cite{SDB2013, SOA2014}, it does not account for the converter power limits $P_{\ell,i} < P_i < P_{u,i}$. A common heuristic used to include power limits uses proportional-integral (PI) $P-f$ droop with proportional and integral gains $k_{P,i} \in \mathbb{R}_{>0}$ and $k_{I,i} \in \mathbb{R}_{>0}$ that activate when a power limit is reached~\cite[Fig.~4]{DLK2019}. For example, if a converter reaches or exceeds its upper power limit (i.e., $P_i \geq P_{u,i}$), then power limiting droop control depicted in Fig.~\ref{fig:plim} will reduce the frequency in proportion to the constraint violation and its integral. Due to the nature of integral control, \textcolor{blue}{this control should intuitively control the converter to within its power limits asymptotically}. However, to the best of the author's knowledge, no analytical results for this control are available in the literature. The main contribution of this work is to begin to close this gap and show that, under mild assumptions, power limiting droop control renders the overall converter-based system stable with respect to a synchronous solution within the converter power limits. To ensure that the control and analysis problem is well-posed, we first formalize the following assumptions that are implicitly made in the literature.
+
+\begin{assumption}[\textbf{Feasible power limits and load}]\label{assum:feas}
+    For all $i \in \mathcal{N}$, the power limits $P_{\ell,i} \in \mathbb{R}^n$ and $P_{u,i} \in \mathbb{R}^n$ satisfy $P_{\ell,i} < P_{u,i}$. Moreover, the load $P_L \in \mathbb{R}^n$ satisfies $\sum_{i=1}^n P_{\ell,i} < \sum_{i=1}^n  P_{L,i} < \sum_{i=1}^n P_{u,i}$.
+\end{assumption}
+%
+\begin{assumption}[\textbf{Feasible power setpoints}]\label{assum:setpoint}
+    The power setpoints $P^\star_i \in \mathbb{R}^n$ satisfy $P_{\ell,i} < P^\star_i < P_{u,i}$.
+\end{assumption}
+%
+
+\subsection{Power system dynamics as projected dynamical system}
+We begin by formulating the power controller in Fig.~\ref{fig:plim} as projected dynamical system. To this end, we introduce the tangent cone and the projection operator.
+%
+\begin{definition}[\textbf{Normal and tangent cone}]\label{def:tangentcone}
+    Given a non-empty convex set $\mathcal{C} \subseteq \mathbb{R}^n$, and a point $x \in \mathcal{C}$, the normal cone $\mathcal N_{x} \mathcal{C}$ is given by
+    \begin{align*}
+        \mathcal{N}_{x}\mathcal{C} \coloneqq \left\{w\in \mathbb{R}^n \mid w^\mathsf{T}\left(x^{\prime}-x\right) \leq 0, \quad \forall x^{\prime} \in \mathcal{C}\right\}.
+    \end{align*} 
+    Then, the tangent cone of the set $\mathcal{C}$ at the point $x$ is defined as the polar cone of the normal cone
+    \begin{align*}
+        \mathcal{T}_{x}\mathcal{C} \coloneqq \left\{v \in \mathbb{R}^n \mid v^\mathsf{T} w \leq 0,\quad \forall w \in \mc N_x \mc C\right\}.
+    \end{align*} 
+\end{definition}
+%%%% Not clear why the following comment is needed. Make it at the point when it becomes important?
+%We note that, irrespective of the algebraic representation, of the set $\mathcal{C}$, the tangent cone $\mathcal{T}_{x} \mathcal{C}$ only relies on the geometric characterization of the set $\mathcal{C}$. 
+%
+Next, we define the projection operator.
+
+\begin{definition}[\textbf{Projection}]\label{def:projection}
+    Given a convex set $\mathcal{C} \subseteq \mathbb{R}^n$ and a vector $v \in \mathbb{R}^n$, $\Pi_{\mathcal{C}}(v)$ denotes the projection of $v$ with respect to the set $\mathcal{C}$, i.e., $\Pi_{\mathcal{C}}(v) = \argmin\nolimits_{p \in \mathcal{C}} \norm{p - v}$.
+\end{definition}
+%
+Broadly, speaking projecting a dynamical system $\ddt x = f(x)$ onto a  set $\mc C$ results in the projected dynamical system $\ddt x = \Pi_{\mathcal{T}_{x}\mathcal{C}}(f(x))$ that does not leave the set $\mc C$. %need more discussion of the literature here.
+We now use Definition~\ref{def:tangentcone} and Definition~\ref{def:projection} to express power limiting droop control as projected dynamical system 
+%
+\begin{subequations}\label{eq:plimdroopprime}
+    \begin{align}
+       \ddt \theta_i =& m_i (P^\star_i-P_i)\! -\! k_{P,i} \Pi_{{\mathbb{R}}_{\geq 0}}(P_i-P_{u,i}) - \mu_{u,i}\\ &+ k_{P,i} \Pi_{{\mathbb{R}}_{\geq 0} }(P_{\ell,i} - P_i) + \mu_{\ell,i}, \nonumber\\
+    \ddt\mu_{\ell,i} =&  \Pi_{\mathcal{T}_{\mu_{\ell,i}} \mathbb{R}_{\geq 0}} \left(k_{I,i} (P_{\ell,i} - P_i)\right),\\
+    \ddt\mu_{u,i} =&  \Pi_{\mathcal{T}_{\mu_{u,i}} \mathbb{R}_{\geq 0}} \left(k_{I,i} (P_i - P_{u,i})\right),
+    \end{align}
+\end{subequations}
+with controller states $\theta_i$,  $\mu_{u,i} \in \mathbb{R}_{\geq 0}$, and $\mu_{\ell,i} \in \mathbb{R}_{\geq 0}$ that corresponds to the ac voltage phase angles and integral of the upper and lower power limit violation. Moreover, we define the ac voltage frequency deviation $\omega_i = \ddt \theta_i \in \mathbb{R}$ from the nominal frequency $\omega_0$. To simplify our analysis and notation, we introduce the following preliminary result.
+%
+\textcolor{blue}{\begin{lemma}[\textbf{Scaled scalar projection}]\label{lem:proj}
+        Given a constant $a \in \mathbb{R}_{>0}$ and scalars $v \in \mathbb{R}$ and $x \in \mathbb{R}$, it holds that $\Pi_{\mathcal{T}_{x} \mathbb{R}_{\geq 0}}(a v) = a \Pi_{\mathcal{T}_{x} \mathbb{R}_{\geq 0}}(v)$.
+    \end{lemma}
+    \begin{IEEEproof}
+        Using~\cite[Prop.~5.3.5]{jean}, $\Pi_{\mathcal{T}_{x} \mathbb{R}_{\geq 0}}(v)$ can be expressed as $\Pi_{\mathcal{T}_{x}\mathcal{C}}(v) = \lim_{\delta \to 0} \frac{1}{\delta} (\Pi_{\mathcal{C}}(x+\delta v) - x)$. Then, for $x \in \partial(\mathcal{C})$ it holds that $\Pi_{\mathcal{T}_{x} \mathbb{R}_{\geq 0}}(a v) = \lim_{\delta \to 0} \frac{1}{\delta}(\Pi_{\mathbb{R}_{\geq 0}}(x+\delta a v) - x)$. Letting $\delta^\prime=a \delta$ results in
+        $\Pi_{\mathcal{T}_{x} \mathbb{R}_{\geq 0}}(a v) =a \lim_{\delta^\prime \to 0} \frac{1}{\delta^\prime} (\Pi_{\mathbb{R}_{\geq 0}}(x+\delta^\prime v) - x)=a \Pi_{\mathcal{T}_{x} \mathbb{R}_{\geq 0}}(v)$.
+    \end{IEEEproof}
+    }
+    % \textit{Proof of Lemma~\ref{lem:identical}:}  
+    % We can conclude \eqref{eq:transformedprimaldual:theta}  by changing the variable $\lambda = K^\prime_{I} \mu$ in \eqref{eq:plimdroop:theta}.
+    % Moreover, to conclude \eqref{eq:transformedprimaldual:lambda}, we use $\ddt \lambda = K^\prime_{I} \ddt \mu$ to obtain
+    % \begin{align*}
+    %     \ddt \lambda &= K^\prime_{I} \Pi_{\mathcal{T}_{\mu} \mathbb{R}^{2n}_{\geq 0}} \left(K^\prime_{I}g^\prime(L\theta)\right)
+    %     \stackrel{\text{Lem.~\ref{lem:proj}}}{=} \Pi_{\mathcal{T}_{\mu} \mathbb{R}^{2n}_{\geq 0}} \left(K_{I} g^\prime(L\theta)\right)\\
+    %     &= \Pi_{\mathcal{T}_{\lambda} \mathbb{R}^{2n}_{\geq 0}} \left(K_{I} g^\prime(L\theta)\right).
+    % \end{align*}
+    % The last equality follows the fact that $\mathcal{T}_{\lambda} \mathbb{R}^{2n}_{\geq 0} = \mathcal{T}_{\mu} \mathbb{R}^n_{\geq 0} =\mathbb{R}^{2n}$ for all $\mu \in \mathbb{R}^{2n}_{>0}$ and $\mathcal{T}_{\lambda} \mathbb{R}^{2n}_{\geq 0} = \mathcal{T}_{\mu} \mathbb{R}^n_{\geq 0} =\mathbb{R}^{2n}_{\geq 0}$ for all $\mu = \mathbbl{0}_{2n}$.\hfill$\blacksquare$
+
+Using Lemma~\ref{lem:proj}, we can rewrite \eqref{eq:plimdroopprime} using the change of variables $\sqrt{k_{I,i}} \lambda_{\ell,i} = \mu_{\ell,i}$, and $\sqrt{k_{I,i}} \lambda_{u,i} = \mu_{u,i}$ as
+\begin{subequations}\label{eq:plimdroop}
+    \begin{align}
+    \!\!\!\!\!\!\!\!\!\ddt \theta_i =& m_i (P^\star_i-P_i)\! -\! k_{P,i} \Pi_{{\mathbb{R}}_{\geq 0}}(P_i-P_{u,i}) \label{eq:plimdroop:angle}\\ &+ k_{P,i} \Pi_{{\mathbb{R}}_{\geq 0} }(P_{\ell,i} - P_i) - \sqrt{k_{I,i}} (\lambda_{u,i}-\lambda_{\ell,i}), \nonumber\\
+    \!\!\!\!\!\!\!\!\!\ddt\lambda_{\ell,i} =&  \Pi_{\mathcal{T}_{\lambda_{\ell,i}} \mathbb{R}_{\geq 0}} \left(\sqrt{k_{I,i}}(P_{\ell,i} - P_i)\right),\\
+    \!\!\!\!\!\!\!\!\!\ddt\lambda_{u,i} =&  \Pi_{\mathcal{T}_{\lambda_{u,i}} \mathbb{R}_{\geq 0}} \left(\sqrt{k_{I,i}}(P_i - P_{u,i})\right).
+    \end{align}
+\end{subequations}
+%
+To obtain the overall power system dynamics, we introduce the vector of power setpoints $P^\star \coloneqq \left(P^\star_1, \ldots, P^\star_{n}\right) \in \mathbb{R}^n$,  vectors $P_{\ell} \coloneqq \left(P_{\ell, 1}, \ldots, P_{\ell, n}\right) \in \mathbb{R}^n$ and $P_{u} \coloneqq \left(P_{u, 1}, \ldots P_{u, n}\right) \in \mathbb{R}^n$ collecting lower and upper power limits, as well as vectors $\lambda_u=(\lambda_{u,1},\ldots,\lambda_{u,n}) \in \mathbb{R}^n_{\geq 0}$ and $\lambda_\ell=(\lambda_{\ell,1},\ldots,\lambda_{\ell,n}) \in \mathbb{R}^n_{\geq 0}$ collecting the integrator states. Moreover, the matrices $M \coloneqq \diag\{m_i\}_{i=1}^n \in \mathbb{S}_{\succ 0}^n$, $K_P \coloneqq \diag\{k_{P, i}\}_{i=1}^{n}$, and $K_{I} \coloneqq \diag \{\sqrt{k_{I, i}}\}_{i=1}^{n}$ collect the droop coefficients $m_i \in \mathbb{R}_{>0}$, proportional gains $k_{P, i} \in \mathbb{R}_{>0}$, and square root of the integral gains $k_{I, i} \in \mathbb{R}_{>0}$. \textcolor{blue}{Vectorizing \eqref{eq:plimdroop} and substituting \eqref{eq:dcpfeq}, the frequency dynamics of a multi-converter system using power limiting droop control are given by}
+%
+\begin{subequations}\label{eq:plimdroop}
+    \begin{align}
+        \ddt\theta =& M\left(P^\star-P_L-L \theta\right) - \left(\alpha \otimes K_I \right)\lambda \label{eq:plimdroop:theta}\\ 
+            &-\left( \alpha \otimes K_P \right) \Pi_{{\mathbb{R}}^{2n}_{\geq 0} }\left(g(L \theta)\right), \nonumber \\
+            \ddt\lambda =&  \Pi_{\mathcal{T}_{\lambda} \mathbb{R}^{2n}_{\geq 0}} \big(\left(I_2 \otimes K_{I}\right) g(L\theta)\big), \label{eq:plimdroop:lambda}
+    \end{align}
+\end{subequations}
+where $\alpha \coloneqq (-1, 1)^\mathsf{T}$, $\lambda \coloneqq  (\lambda_\ell,\lambda_u) \in \mathbb{R}^{2n}_{\geq 0}$, and the function $g: \mathbb{R}^n \to \mathbb{R}^{2n}$ and converter network power injection $P_N \coloneqq L \theta$ are used to express the violation of power limits as
+\begin{align*}
+    g(P_N) \coloneqq \begin{bmatrix}
+    P_{\ell} - P_N - P_L\\
+    P_N + P_{L}-P_u
+    \end{bmatrix}.
+\end{align*}
+%
+We emphasize that this model assumes that the load $P_L$, power setpoints $P^\star$, and power limits $P_\ell$ and $P_u$ are constant on the time-scales of interest for studying frequency stability. Extensions to time-varying loads, setpoints, and power limits are seen as an interesting area for future work. 
+
+
+\section{Stability of power limiting droop control}
+In this section, we introduce a constrained dc power flow (CDCPF) problem and characterize its optimizers. Moreover, we present the main result of this work that establishes that the multi-converter system \eqref{eq:plimdroop} is globally asymptotically stable with respect to a solution of a constrained power flow problem. A detailed analysis and proof of the main result will be presented in subsequent sections.
+
+\subsection{Constrained dc power flow problem in nodal coordinates}
+Consider the constrained dc power flow (CDCPF) problem 
+\begin{subequations}\label{eq:pfprob}
+    \begin{align}
+        &\min_{\theta} \quad (P-P^\star)^\mathsf{T} M (P-P^\star) \\
+        & \text {s.t.} \quad  P_\ell \leq P \leq P_{u} \label{eq:pfprob:dcpf:lim}\\
+        & \phantom{\text{s.t.}} \quad P = L \theta + P_L \label{eq:pfprob:dcpf}
+        \end{align}
+\end{subequations}
+seeks optimal angles $\theta^\star \in \mathbb{R}^n$ (i.e., nodal variables) that minimize the cost of deviating from the power setpoint $P^\star \in \mathbb{R}^n$ subject to the converter power limits $P_\ell \in \mathbb{R}^n$ and $P_u\in \mathbb{R}^n$.
+
+\begin{proposition}[\textbf{Feasibility in nodal coordinates}]\label{prop:feas}
+    There exists $\theta \in \mathbb{R}^n$ such that $P_{\ell} < L\theta + P_{L} < P_{u}$ if and only if $P_\ell$, $P_u$, and $P_L$ satisfy Assumption~\ref{assum:feas}.
+\end{proposition}
+\begin{IEEEproof}
+   Under Assumption~\ref{assum:feas}, there exists $P_f \in \mathbb{R}^n$ such that $P_\ell < P_f < P_u$ and $\mathbbl{1}_n^\mathsf{T} P_f = \mathbbl{1}_n^\mathsf{T} P_L$. Next, we note that there exists $\theta \in \mathbb{R}^n$ such that $P_f-P_L = L \theta$ if and only if $(P_f-P_L) \perp \mathbbl{1}_n$ \cite[Lem.~6.12]{LNS} or, equivalently, if and only if $\mathbbl{1}_n^\mathsf{T} (P_f-P_L) = 0$ and sufficiency of Assumption~\ref{assum:feas} immediately follows. Next, note that there only exists $\theta \in \mathbb{R}^n$ such that $P_{\ell} < L\theta + P_{L} < P_{u}$ if   
+   $\mathbbl{1}_n^\mathsf{T} P_\ell < \mathbbl{1}_n^\mathsf{T} (L \theta + P_L) < \mathbbl{1}_n^\mathsf{T} P_u$. Using $\mathbbl{1}_n^\mathsf{T} L = 0$, it directly follows that $\sum_{i=1}^n P_{\ell,i} < \sum_{i=1}^n  P_{L,i} < \sum_{i=1}^n P_{u,i}$ is necessary.
+\end{IEEEproof}
+
+Making the constraint \eqref{eq:pfprob:dcpf} explicit, scaling the constraint \eqref{eq:pfprob:dcpf:lim} by the diagonal matrix $K_I \in \mathbb{S}^n_{>0}$, expanding the cost function, and dropping constant terms that do not depend on $\theta$, it can be shown that the optimizer of \eqref{eq:pfprob} is equivalent to the optimizer of
+\begin{subequations}\label{eq:pfprob2}
+    \begin{align}
+        &\min_{\theta} \quad \tfrac{1}{2} \theta^\mathsf{T} L M L \theta +  (P_L-P^\star)^\mathsf{T} M L \theta  \\
+        & \text {s.t. } \quad  K_I P_\ell \leq K_I (L \theta + P_L) \leq K_I P_u.
+        \end{align}
+\end{subequations}
+%
+Next, we define the set of points that satisfy the Karush-Kuhn-Tucker (KKT) conditions of \eqref{eq:pfprob2}. 
+%
+\begin{definition}[\textbf{KKT points in nodal coordinates}]\label{def:stheta}
+$\mathcal{S}_{\theta} \subseteq \mathbb{R}^{3n}$ denotes the set of points $(\theta^\star,\lambda^\star_\ell,\lambda^\star_u)$ that satisfy the KKT conditions of the CDCPF in nodal coordinates \eqref{eq:pfprob2}, i.e., $P_\ell \leq L \theta^\star + P_L \leq P_u$, $(\lambda^\star_\ell,\lambda^\star_u) \in \mathbb{R}^{2n}_{\geq 0}$, and 
+\begin{subequations}\label{eq:KKT:nodal}
+\begin{align}
+    L \big(M (L \theta^\star + P_L-P^\star) + K_I (\lambda^\star_u-\lambda^\star_\ell)\big) &= \mathbbl{0}_n,\label{eq:KKT:nodal:optimality}\\
+    \diag\{\lambda^\star_{\ell,i}\}_{i=1}^n (P_\ell - L \theta^\star - P_L)&=0_n,\\
+    \diag\{\lambda^\star_{u,i}\}_{i=1}^n (L \theta^\star + P_L - P_u)&=0_n.
+\end{align}
+\end{subequations}
+\end{definition}
+The next property directly follows from $\ker L = \mathbbl{1}_n$ and formalizes that KKT points of \eqref{eq:pfprob} are not unique or isolated.
+\begin{property}[\textbf{Non-unique KKT points}]\label{property:stheta}
+    For any $\left(\theta^\star, \lambda^\star\right) \in \mathcal{S}_{\theta}$ and all $c \in \mathbb{R}$ it holds that $\left(\theta^\star + cI_n, \lambda^\star\right) \in \mathcal{S}_{\theta}$.
+\end{property}
+
+\subsection{Summary of main results}
+\begin{definition}[\textbf{Global asymptotic stability with respect to a set}]\label{def:GAS}
+Given a dynamic system $\ddt x = f(x)$ and \textcolor{blue}{forward invariant set $\mc D$}, $\ddt x = f(x)$ is called globally asymptotically stable with respect to a set $\mc C$ on $\mc D$ if 
+\begin{enumerate}[label=(\roman*)]
+ \item it is almost globally attractive with respect to $\mc C$, i.e., $
+     \lim_{t\to\infty} \norm{\varphi(t,x_0)}_{\mc C} = 0$ holds for all $x_0 \in \mc D$, and \label{def:GAS:attr}
+        \item it is Lyapunov stable with respect to $\mc C$, i.e., for every $\varepsilon \in \mathbb{R}_{>0}$ there exists $\delta \in \mathbb{R}_{>0}$ such that $x_0 \in \mc D$ and $\norm{x_0}_{\mc C} < \delta$ implies $\norm{\varphi(t,x_0)}_{\mc C} < \varepsilon$ for all $t \in \mathbb{R}_{\geq 0}$.\label{def:GAS:stab}
+\end{enumerate}
+\end{definition}
+
+\blue{Add reference to \cite{A2004} and discuss that $\mc C$ is not compact in our case.}
+
+\begin{theorem}[\textbf{Global asymptotic stability}]\label{thm:GASpowerlimit}
+    Consider $P_\ell$, $P_u$, $P_L$, and $P^\star$ such that Assumption~\ref{assum:feas} and Assumption~\ref{assum:setpoint} hold. Then, \eqref{eq:plimdroop} is globally asymptotically stable on $\mathbb{R}^n \times \mathbb{R}^{2n}_{\geq 0}$ with respect to the set  $\mathcal{S}_{\theta}$. Moreover, there exists a synchronous frequency $\omega_s \in \mathbb{R}$ such that $\lim_{t \rightarrow \infty} \omega_i(t) = \omega_{s}$ for all $i \in \mc N$.
+\end{theorem}
+In other words, \eqref{eq:plimdroop} is Lyapunov stable with respect to the set $\mathcal{S}_{\theta}$ of KKT points of the CDCPF \eqref{eq:pfprob2} and converges to an optimizer of $\mathcal{S}_{\theta}$ as $t\to\infty$. Notably, by Property~\ref{property:stheta} this does imply that \eqref{eq:plimdroop} is globally asymptotically stable with respect to a synchronous solution but not necessarily with respect to an equilibrium point. We require the following definition to further characterize the synchronous solutions in the set $\mathcal{S}_{\theta}$.
+%
+\begin{definition}[\textbf{Active constraint sets}] \label{def:activesets}
+    We define $\mathcal{I}_{\ell} \subseteq \mc N$ as the set of converters operating at their lower power limit, i.e., if $i \in \mathcal{I}_{\ell} \subseteq \mathcal{N}$ then $P_i < P_{\ell, i}$. Similarly, $\mathcal{I}_{u} \subseteq \mc N \setminus \mathcal{I}_{\ell}$ is the set of converters operating at their upper power limit, i.e., if $i \in \mathcal{I}_{u} \subseteq \mathcal{N}$ then $P_i > P_{u, i}$.    
+\end{definition}
+%
+Next, we establish that \eqref{eq:plimdroop} converges to a synchronous frequency $\omega_s \in \mathbb{R}$ and we characterize the synchronous frequency $\omega_s$ as a function of the total load $\sum_{i \in \mc N}  P_{L,i}$, total power dispatch $\sum_{i \in \mc N} P^\star_i$, and active sets $\mc I_u$ and $\mc I_\ell$.
+
+\begin{theorem}[\textbf{Frequency synchronization}]\label{th:syncfreq}
+    Consider $P_\ell$, $P_u$, $P_L$, and $P^\star$ such that Assumption~\ref{assum:feas} and Assumption~\ref{assum:setpoint} hold. One of the following holds
+    \begin{enumerate}[label=(\roman*)]
+        \item $\sum_{i \in \mc N}  P_{L,i} < \sum_{i \in \mc N} P^\star_i$ and \[\omega_s\!=\!\frac{\sum_{i \notin \mathcal{I}_\ell} P_i^\star+\sum_{i \in \mathcal{I}_\ell} P_{\ell, i}-\sum_{i \in \mathcal{N}} P_{L, i}}{\sum_{i \notin \mathcal{I}_\ell} m_i^{-1}} > 0,\] \label{th:syncfreq:lower}
+        \item   $\sum_{i \in \mc N}  P_{L,i} = \sum_{i \in \mc N} P^\star_i$ and $\omega_s=0$, \label{th:syncfreq:equal}
+        \item $\sum_{i \in \mc N}  P_{L,i} > \sum_{i \in \mc N} P^\star_i$ and 
+        \[\omega_s\!=\!\frac{\sum_{i \notin \mathcal{I}_u} P_i^\star+\sum_{i \in \mathcal{I}_u} P_{u, i}-\sum_{i \in \mathcal{N}} P_{L, i}}{\sum_{i \notin \mathcal{I}_u} m_i^{-1}} < 0.\] \label{th:syncfreq:higher}
+    \end{enumerate}
+\end{theorem}
+
+\begin{corollary}[\textbf{Active constraint set}]\label{cor:activesets}
+    Consider $P_\ell$, $P_u$, $P_L$, and $P^\star$ such that Assumption~\ref{assum:feas} and Assumption~\ref{assum:setpoint} hold.  Then, for all $(\theta,\lambda) \in \mathcal{S}_{\theta}$ it holds that 
+    \begin{enumerate}[label=(\roman*)]
+    \item $\mathcal{I}_{\ell} \neq \emptyset$ implies $\mathcal{I}_{u} = \emptyset$ and $\sum_{i \mc N} P_{L,i} < \sum_{i \mc N} P^\star_i$, \label{cor:activesets:ellu}
+    \item $\mathcal{I}_{u} \neq \emptyset$ implies $\mathcal{I}_{\ell} = \emptyset$ and $\sum_{i \mc N} P_{L,i} > \sum_{i \mc N} P^\star_i$, \label{cor:activesets:uell}
+    \item $\sum_{i \mc N}  P_{L,i} < \sum_{i \mc N} P^\star_i$ implies $\mathcal{I}_{u} = \emptyset$, \label{cor:activesets:lowload}
+    \item $\sum_{i \mc N} P_{L,i} > \sum_{i \mc N} P^\star_i$ implies $\mathcal{I}_{\ell} = \emptyset$. \label{cor:activesets:highload}
+    \end{enumerate}
+\end{corollary}
+
+
+In particular, Theorem~\ref{th:syncfreq} recovers and extends the well known results for (proportional) $P-f$ droop control, i.e., if no converter is operating at a power limit (i.e., $\mc I_u = \mc I_\ell = \emptyset$), then the steady-state frequency deviation is determined by the droop coefficients $m_i \in \mathbb{R}_{>0}$ and the mismatch $\sum_{i \in \mc N} P^\star_i - P_{L,i}$ between the total power dispatch and load. Moreover, if the total load $\sum_{i \in \mc N}  P_{L,i}$ is smaller than the total power dispatch $\sum_{i \in \mc N} P^\star_i$, then converters can only be at their lower power limit (i.e., $\mc I_u=\emptyset$) and the synchronous frequency is determined by the sum of the droop coefficients and sum of the power setpoints of converters not at the lower limit (i.e., $i \notin \mc I_\ell$), the total load, and the sum of the lower power limits of the converters at the lower limit (i.e., $i \in \mc I_\ell$). In contrast, if the total load $\sum_{i \in \mc N}  P_{L,i}$ is larger than the total power dispatch  $\sum_{i \in \mc N}  P^\star_i$, then converters can only be at their upper power limit (i.e., $\mc I_\ell=\emptyset$) and the synchronous frequency is determined by the sum of the droop coefficients and sum of the power setpoints of converters not at the upper limit (i.e., $i \notin \mc I_u$), the total load, and the sum of the \textcolor{blue}{lower} power limits of the converters at the upper limit (i.e., $i \in \mc I_u$). Finally, we note that if $\sum_{i \in \mc N}  P_{L,i}$ is smaller (larger) than the total power dispatch  $\sum_{i \in \mc N}  P^\star_i$, then the synchronous frequency is larger (smaller) than nominal frequency $\omega_0$. The remainder of the manuscript will focus on proving the aforementioned results.
+
+
+
+
+
+\section{Stability analysis of power limiting droop control}
+In this section, we present the stabiltiy analysis and proofs that establish our main results stated in the previous section.
+
+\subsection{Overview and proof strategy}
+To establish the equivalence between the CDCPF \eqref{eq:pfprob} and dynamics of the converter-based power system using power limiting droop control \eqref{eq:plimdroop} we will use the proof strategy shown in Fig.~\ref{fig:strategy}. Our results crucially depend on two main steps. First, we use the oriented incidence matrix $B$ and decomposition $V\in\mathbb{R}^{e \times e}$ of the weight matrix $W=VV \in\mathbb{R}^{e \times e}$ of the graph $\mc G$ to define the change of coordinates $\eta = VB^\mathsf{T}$. Notably, this change of coordinates transforms nodal angles to angle differences across graph edges (i.e., transmission lines). Applying this change of coordinates to the CDCPF \eqref{eq:pfprob} results in an optimization problem in edge coordinates whose KKT points can be related to the KKT points of the CDCPF \eqref{eq:pfprob} under the restriction $V \in \Ima(B^\mathsf{T})$. Second, we show that, in edge coordinates $\eta$, a network of converters using power limiting droop control \eqref{eq:plimdroop} can be interpreted as a distributed primal-dual algorithm solving \eqref{eq:pfprob} while maintaining $\eta(t) \in \Ima (VB^\mathsf{T})$ for all times $t \in \mathbb{R}_{\geq 0}$ if $\eta(0) \in \Ima (VB^\mathsf{T})$. Notably, the dynamics in edge coordinates can be decomposed into dynamics associated with primal dual dynamics resulting from a strictly convex problem and remaining dynamics that are stable in the sense of Lyapunov. The primal dual dynamics resulting from a strictly convex problem can then be analyzed using well-known results from~\cite{ashish}. Combining the aforementioned results allows us to establish that \eqref{eq:plimdroop} is globally asymptotically stable with respect to the set of KKT points of the constrained dc power flow problem \eqref{eq:pfprob}. Moreover, we will use properties of the set of KKT points to establish that \eqref{eq:plimdroop} achieves frequency synchronization under constraints and establish that the synchronous frequency deviation is a function of the active constraint set, load, power setpoints, and droop coefficients, but does not depend on the graph $\mc G$ or the control gains of the power limiting PI controls.
+%
+\begin{figure}[htbp]
+    \begin{center}
+        % \vspace*{-1em}
+        \includegraphics[width=1\columnwidth]{rectangle.pdf}
+        \caption{Proof strategy\label{fig:strategy}}
+    \end{center}
+\end{figure}
+
+
+
+
+
+\subsection{Constrained dc power flow problem in edge coordinates}
+To establish our main result, we reformulate the constrained dc power flow problem \eqref{eq:pfprob} in edge coordinates. To this end, consider the (weighted) angle differences  $\eta \coloneqq VB^\mathsf{T} \theta \in \mathbb{R}^{e}$ between connected converters and the decomposition
+\begin{align}\label{eq:coordination_changing}
+    L\theta = BV V B^\mathsf{T} \theta = BV \eta
+\end{align}
+of the Laplacian matrix $L$ into its oriented incidence matrix $B \in \mathbb{R}^{n \times e}$ and weight matrix $V \coloneqq W^{\frac{1}{2}} \in \mathbb{R}^{e \times e}$. Applying  \eqref{eq:coordination_changing} to \eqref{eq:pfprob2} results in the constrained DCPF problem in \emph{edge coordinates} 
+\begin{subequations}\label{eq:pfangledifference}
+\begin{align}
+    &\min_\eta \tfrac{1}{2} \eta^\mathsf{T} V B^\mathsf{T} M BV\eta  +\left(P_L-P^\star\right)^{\mathsf{T}} M BV\eta   \\ 
+    & \text{s.t.} \quad K_I P_{\ell} \leq K_I (BV\eta+P_L)  \leq K_I P_u.\end{align}
+\end{subequations}
+Notably, the Hessian $V B^\mathsf{T} M BV \in \mathbb{S}^{e}_{\succeq 0}$ of \eqref{eq:pfangledifference} becomes a weighted edge Laplacian matrix (see \cite{ZM2011,ZB2014} for details) if $M=c I_e$ for some $c \in \mathbb{R}_{>0}$. We will show that $V B^\mathsf{T} M BV \in \mathbb{S}^{e}_{\succ 0}$ (i.e., \eqref{eq:pfangledifference} is strongly convex) when $\mc G$ has no cycles but $V B^\mathsf{T} M BV \in \mathbb{S}^{e}_{\succeq 0}$ otherwise. In other words, $\eta = VB^\mathsf{T} \theta$ is not a similarity transform for power systems with meshed topology. Before investigating this aspect further, the same steps as in the proof of Proposition~\ref{prop:feas} can be used to show that \eqref{eq:pfangledifference} admits a feasible solution under Assumption~\ref{assum:feas}.
+%
+\begin{proposition}[\textbf{Feasibility in edge coordinates}]\label{prop:feasdiff}
+    There exists $\eta \in \mathbb{R}^n$ such that $P_{\ell} < B V \eta + P_{L} < P_{u}$ if and only if $P_\ell$, $P_u$, and $P_L$ satisfy Assumption~\ref{assum:feas}.
+\end{proposition}
+Next, we characterize the optimizers of \eqref{eq:pfangledifference}.
+
+\begin{definition}[\textbf{KKT points of CDCPF in edge coordinates}]\label{def:seta}
+$\mathcal{S}_{\eta} \subseteq \mathbb{R}^{e + 2n}$ denotes the set of points \textcolor{blue}{$(\eta^\star,\lambda^\star_\ell,\lambda^\star_u)$} that satisfy the KKT conditions of the CDCPF in edge coordinates \eqref{eq:pfangledifference}, i.e., $P_\ell \leq BV \eta^\star + P_L \leq P_u$,  $(\lambda^\star_\ell,\lambda^\star_u) \in \mathbb{R}^{2n}_{\geq 0}$, and 
+\begin{subequations}\label{eq:KKT:edge} 
+\begin{align} 
+    B^\mathsf{T}\big(M (BV \eta^\star + P_L - P^\star) + K_I (\lambda^\star_u-\lambda^\star_\ell)\big) &= \mathbbl{0}_{e},\label{eq:KKT:edge:optimality}\\
+    \diag\{\lambda^\star_{u,i}\}_{i=1}^n  (BV \eta^\star + P_L - P_u)&=0_n,\\
+    \diag\{\lambda^\star_{\ell,i}\}_{i=1}^n  (P_\ell - BV \eta^\star - P_L)&=0_n.
+\end{align}
+\end{subequations}
+\end{definition}
+%
+The following result clarifies the relationship between KKT points of \eqref{eq:pfprob} and \eqref{eq:pfangledifference}.
+\begin{proposition}[\textbf{KKT points in edge coordinates}]\label{prop:equiv}\phantom{a}
+\begin{enumerate}[label=(\roman*)]
+    \item For any $(\eta^\star, \lambda^\star) \in \mathcal{S}_{\eta}$, there exist $\theta^\star=VB^\mathsf{T} \eta^\star$ such that $(\theta^\star, \lambda^\star) \in \mathcal{S}_\theta$ if and only if $\eta^\star \in \Ima(B^\mathsf{T})$.
+        \item $(\theta^\star, \lambda^\star) \in \mathcal{S}_\theta$ if and only if $(VB^\mathsf{T} \theta^\star, \lambda^\star) \in \mathcal{S}_{\eta}$.
+\end{enumerate}
+\end{proposition}
+\begin{IEEEproof}
+Note that $\theta^\star \in \mathbb{R}^n$ such that $\theta^\star = V B^\mathsf{T}\eta^\star$ exists if and only if $\eta^\star \in \Ima(B^\mathsf{T})$. Then, the first statement immediately follows by substituting $\theta^\star = V B^\mathsf{T}\eta^\star$ into the equations defining $\mathcal{S}_{\theta}$ and noting that $\ker(L)=\ker(B^\mathsf{T})$. To show the second statement, note that $\ker(B^\mathsf{T}) = \ker(L)$ and substitute $(\eta^\star, \lambda^\star) = (VB^\mathsf{T}\theta^\star, \lambda^\star)$ into \eqref{eq:KKT:edge:optimality}. Then, both $(\theta^\star, \lambda^\star) \in \mathcal{S}_\theta$ and $(VB^\mathsf{T} \theta^\star, \lambda^\star) \in \mathcal{S}_{\eta}$ hold if and only if $M(L \theta^\star + P_L +P^\star)+ K_I (\lambda^\star_u-\lambda^\star_\ell) \in \ker(B^\mathsf{T})$.
+\end{IEEEproof}
+In other words, $\eta^\star \in \Ima (VB^\mathsf{T})$ ensures that the angle differences $\eta^\star \in \mathbb{R}^e$ are restricted to the set for which a corresponding  angle configuration $\theta^\star \in \mathbb{R}^n$ can be found. Moreover, the sets of KKT points of \eqref{eq:pfprob} and \eqref{eq:pfangledifference} coincide under the edge transformation $\eta = VB^\mathsf{T} \eta$. 
+
+
+
+\subsection{Constrained primal-dual dynamics in edge coordinates}
+Next, we will investigate stability of primal-dual gradient descent applied to the CDCPF in edge coordinates \eqref{eq:pfangledifference}. The augmented Lagrangian associated with \eqref{eq:pfangledifference} is given by
+\begin{align*}
+    \mathcal{L}(\eta, \lambda)\coloneqq&\frac{1}{2} \eta^{\mathsf{T}} VB^\mathsf{T}MBV \eta+\left(P_L-P^\star\right)^{\mathsf{T}} M BV \eta \\
+    +&\frac{1}{2} \left[\Pi_{\mathbb{R}_{\geq 0}^{2n}} \left(g(BV\eta)\right)\right]^\mathsf{T} (I_2 \otimes K_P)\Pi_{\mathbb{R}_{\geq 0}^{2n}} \left(g(BV\eta)\right)\\ +& \lambda^\mathsf{T} K_I  g(BV\eta),
+    \end{align*}
+Next, we introduce the primal-dual gradient dynamics $\ddt\eta = -\nabla_{\eta} \mathcal{L}$, $\ddt\lambda = \Pi_{\mathcal{T}_{\lambda} \mathbb{R}^{2n}_{\geq 0}} \left(\nabla_{\lambda}\mathcal{L}\right)$ associated with the augmented Lagrangian. This results in  
+\begin{subequations}\label{eq:primaldualedge}
+    \begin{align}
+        \ddt\eta =&   VB^\mathsf{T} (M(P^\star-P_L - BV\eta) -  (\alpha \otimes K_I)\lambda,  \label{eq:primaldualedge:angle} \\
+        & - \left(\alpha \otimes K_P\right) \Pi_{{\mathbb{R}}^{2n}_{\geq 0} }\left(g(BV\eta)\right)), \nonumber \\
+        \ddt\lambda =&    \Pi_{\mathcal{T}_{\lambda} \mathbb{R}^{2n}_{\geq 0}} \left((I_2 \otimes K_I) g(BV\eta)\right).
+    \end{align}
+\end{subequations}
+The next theorem shows the primal-dual dynamics \eqref{eq:primaldualedge} are globally asymptotically stable with respect the set of KKT points $\mc S_{\eta}$. In addition, we show that the primal-dual dynamics \eqref{eq:primaldualedge} converge to an equilibrium.
+
+\begin{theorem}[\textbf{Global asymptotic stability of primal dual dynamics in edge coordinates}]\label{thm:edgeconvergence}
+    Consider $P_\ell$, $P_u$, $P_L$, and $P^\star$ such that Assumption~\ref{assum:feas} and Assumption~\ref{assum:setpoint} hold. Then the primal-dual dynamics \eqref{eq:primaldualedge} are globally asymptotically stable with respect to $\mc S_\eta$ on $\mathbb{R}^{e} \times \mathbb{R}^{2n}_{\geq0}$. Moreover, $\ddt (\eta,\lambda) = \mathbbl{0}_{e+2n}$ holds on $\mc S_\eta$. 
+\end{theorem}
+\begin{IEEEproof} We begin by noting that $M \in \mathbb{S}^n_{\succ 0}$. Then, by \cite[Observation~7.1.8]{HJ2013}, $B^\mathsf{T} M B \in \mathbb{S}^{e \times e}_{\succ 0}$ if and only if $\rank{B}=e$. If $\mc G$ is a connected tree, then $n=e+1$ and by \cite[Lemma 9.2]{LNS}, $\rank{B}=e$. Conversely, if $\mc G$ contains cycles, then $e \geq n$ and $\rank{B} \leq e-1$. Thus, if $\mc G$ is a tree, then the cost function of \eqref{eq:pfangledifference} is strictly convex and $\mc S_\eta$ is a singleton. Moreover, by Proposition~\ref{prop:feasdiff} there exists $\eta$ such that $P_\ell < B V \eta + P_L < P_u$, i.e., Slater's condition holds. Then, \cite[Theorem~4.5]{ashish} immediately implies that \eqref{eq:primaldualedge} is globally asymptotically stable with respect to $\mc S_\eta$. 
+        
+When $\mc G$ contains cycles, we can decompose \eqref{eq:pfangledifference} and \eqref{eq:primaldualedge} into a strongly convex part and remaining dynamics. To this end, let $\Gamma \coloneqq \begin{bmatrix} \Gamma_{+} & \Gamma_{0} \end{bmatrix}$ where $\Gamma_{+}  \in \mathbb{R}^{e \times n-1}$ contains eigenvectors corresponding to the positive eigenvalues of $V B^\mathsf{T} M B V$ and $\Gamma_{0}  \in \mathbb{R}^{e \times e-(n-1)}$ contains the eigenvectors corresponding to the zero eigenvalues. Next, let $\gamma = (\gamma_+,\gamma_0) \in \mathbb{R}^{e}$. Since $B^\mathsf{T} M B \in \mathbb{S}^n_{\succeq 0}$, we conclude that $\Gamma^{-1} =  \Gamma^\mathsf{T}$. Applying the change of coordinates $\eta = \Gamma \gamma$ to \eqref{eq:pfangledifference} results in
+%
+\begin{subequations}\label{eq:pfangledifferenceplus}
+    \begin{align}
+        &\min_\eta \frac{1}{2} \gamma_+^\mathsf{T} H \gamma_+ + c^\mathsf{T} \gamma_+   \\ 
+        & \text{s.t. }   K_I P_{\ell} \leq K_I (A \gamma_+P_L)  \leq K_I  P_u,
+    \end{align}
+\end{subequations}
+%
+where $H\coloneqq\Gamma_+^\mathsf{T} VB^\mathsf{T}MBV \Gamma_+$, $c\coloneqq\Gamma_+^\mathsf{T}VBM(P^\star\!-\!P_L)$,  and $A\coloneqq BV \Gamma_+$. Notably, this transformation only removed redundant degrees of freedom and, by construction, \eqref{eq:pfangledifferenceplus} is strongly convex and strictly feasible under the same conditions as \eqref{eq:pfangledifference}. Moreover, given a KKT point $(\gamma^\star_+,\lambda^\star)$ of \eqref{eq:pfangledifferenceplus}, $BV \Gamma_0 = \mathbb{R}^{n \times e-(n-1)}$ implies that $(\Gamma_+ \gamma^\star_+ + \Gamma_0 \gamma_0,\lambda^\star) \in \mc S_\eta$ for all $\gamma_0 \in \mathbb{R}^{e-(n-1)}$. Applying the change of coordinates $\eta = \Gamma \gamma$ to \eqref{eq:primaldualedge} results in $\ddt \gamma_0 =0$ and 
+%
+\begin{subequations}\label{eq:primaldualedgeplus}
+\begin{align}
+    \!\!\ddt \gamma_+=&-\!H \gamma_+ \!-\!c \!-\! \Gamma_+^\mathsf{T} \big( (\alpha \otimes K_{P}) \Pi_{\mathbb{R}^{2n}_{\geq 0}}(g(A \gamma_+)) \nonumber\\
+    & +  (\alpha \otimes K_I) \lambda \big),  \\ 
+    \ddt \lambda =& \Pi_{\mathcal{T}_{\lambda}{\mathbb{R}^{2n}_{\geq 0} }}\left(K_I g(A\gamma_+)\right).
+\end{align}
+\end{subequations}
+Notably, \eqref{eq:primaldualedgeplus} corresponds to primal dual dynamics of the augmented Lagrangian of \eqref{eq:pfangledifferenceplus}. Thus, by \cite[Theorem~4.5]{ashish}, the dynamics \eqref{eq:primaldualedgeplus} are globally asymptotically stable with respect to a KKT point $(\gamma^\star_+,\lambda^\star)$ of \eqref{eq:pfangledifferenceplus}. In other words, \eqref{eq:primaldualedge} can be decomposed into dynamics that are globally asymptotically stable with respect to $(\gamma^\star_+,\lambda^\star)$ and a constant $\gamma_0$. Since $(\eta,\lambda) = (\Gamma_+ \gamma_+ + \Gamma_0 \gamma_0,\lambda) \in \mc S_\eta$ for any $\gamma_0 \in \mathbb{R}^{e \times e-(n-1)}$, it follows that \eqref{eq:primaldualedge} is globally asymptotically stable with respect to $\mc S_\eta$. The last statement of the Theorem follows by noting that $\ddt (\gamma_+,\lambda)=\mathbbl{0}_{3n-1}$ when $(\gamma_+,\lambda)=(\gamma^\star_+,\lambda^\star)$ and $\ddt \gamma_0=0$.
+\end{IEEEproof}
+%
+The following corollary is a direct consequence of the proof of Theorem~\ref{thm:edgeconvergence}.
+%
+\begin{corollary}[\textbf{Radial network}]
+    Consider $P_\ell$, $P_u$, $P_L$, and $P^\star$ such that Assumption~\ref{assum:feas} and Assumption~\ref{assum:setpoint} hold. If $\mc G$ is a tree, then \eqref{eq:primaldualedge} is globally asymptotically stable with respect to the unique optimizer of \eqref{eq:pfangledifference}, i.e., $\mc S_\eta$ is a singleton.
+\end{corollary}
+
+
+\subsection{Power limiting droop control in edge coordinates}
+% \red{Not sure if this is needed. Maybe we can lump this step into the Proof of the lemma on coinciding trajectories?}
+% To simplify our analysis, we apply the change of coordinates $(\lambda_u,\lambda_\ell) = (I_2 \otimes K_{I}) (\mu_u,\mu_\ell)$ with $K_I = (K_{I})^{\frac{1}{2}}$ to obtain
+% \begin{subequations}\label{eq:transformedprimaldual}
+%     \begin{align}
+%     \ddt\theta =& M\left(P^\star-P_L-L \theta\right) - (\alpha \otimes K_{I})\mu \label{eq:transformedprimaldual:theta}\\
+%     &-\left(\alpha \otimes K_P \right) \Pi_{{\mathbb{R}}^{2n}_{\geq 0} }\left(g(L \theta)\right) \nonumber \\
+%     \ddt\mu =&  \Pi_{\mathcal{T}_{\mu} \mathbb{R}^{2n}_{\geq 0}} \left((I_2 \otimes K_{I}) g(L\theta)\right). \label{eq:transformedprimaldual:lambda}
+%     \end{align}
+%     \end{subequations}
+
+% The next lemma establishes that \eqref{eq:plimdroop} and \eqref{eq:transformedprimaldual} are identical.
+
+% \begin{lemma}[\textbf{Identical dynamics up to change of coordinates}]\label{lem:identical}
+%     The dynamics \eqref{eq:plimdroop} and \eqref{eq:transformedprimaldual} are identical up to the change of coordinates $(\mu_u,\mu_\ell) = (I_2 \otimes K_{I}) (\lambda_u,\lambda_\ell)$.
+% \end{lemma}
+% A proof is given in the Appendix.
+
+Let $C_\eta \coloneqq \begin{bmatrix} I_e & \mathbbl{0}_{e \times 2n} \end{bmatrix}$ and $T_\eta \coloneqq \blkdiag(VB^\mathsf{T},I_{2n})$.
+
+\begin{lemma}[\textbf{Coinciding vector fields}]\label{lem:coincide}
+    Let $\varphi_{\theta}(t,(\theta_0,\lambda_0))$ and $\varphi_{\eta}(t,(\eta_0,\lambda_0))$ denote the solutions of \eqref{eq:plimdroop} and \eqref{eq:primaldualedge} for initial conditions $(\theta_0,\lambda_0)$ and $(\eta_0,\lambda_0)$. Then, it holds that
+    \begin{enumerate}[label=(\roman*)]
+        \item $\eta(t)=C_\eta \varphi_{\eta}(t,(\eta_0,\lambda_0)) \in \Ima(VB^\mathsf{T})$ for all $t \in \mathbb{R}_{\geq0}$ and all $\eta_0\in \Ima(VB^\mathsf{T})$, and \label{lem:coincide:invariant}
+        \item $T_\eta \varphi_{\theta}(t,(\theta_0,\lambda_0))=\varphi_{\eta}(t,T_\eta(\theta_0,\lambda_0))$. \label{lem:coincide:solutions}
+    \end{enumerate} 
+\end{lemma}
+\begin{IEEEproof}
+We first note that $\ddt \eta \in \Ima(VB^\mathsf{T})$ in \eqref{eq:primaldualedge}. Therefore, for all $\eta_0 \in \Ima(VB^\mathsf{T})$, it holds that $C_\eta \varphi_\eta(t,(\eta_0,\lambda_0)) \in \Ima(VB^\mathsf{T})$ for all $t \in \mathbb{R}_{\geq 0}$. To show statement~\ref{lem:coincide:solutions}, let 
+\begin{align*}
+    f(\eta, \lambda) \coloneqq& M\left(P^\star-P_L-B V \eta\right)- (\alpha \otimes K_I) \lambda    \\
+    & -(\alpha \otimes K_P)\Pi_{\mathbb{R}_{\geq 0}^n}\left(g(BV\eta)\right).
+\end{align*}
+Then \eqref{eq:plimdroop} and \eqref{eq:primaldualedge} can be written as
+\begin{align}\label{eq:sigma_eta}
+        VB^\mathsf{T} \ddt \theta = VB^\mathsf{T} f \big(\underbrace{VB^\mathsf{T}\theta}_{=\eta}, \lambda\big) = 
+        \ddt \eta, \\
+        \ddt \lambda = \Pi_{\mathcal{T}_{\lambda} \mathbb{R}^{2n}_{\geq 0}}\bigg((I_2 \otimes K_I) g\big(BV\underbrace{VB^\mathsf{T}\theta}_{=\eta}\big)\bigg).
+\end{align}
+In other words, the vector fields of \eqref{eq:plimdroop} and \eqref{eq:primaldualedge} coincide mapped to the edge coordinates in the sense of statement~\ref{lem:coincide:solutions} (i.e., by multiplying \eqref{eq:plimdroop} with $T_\eta$ from the left) when $\eta \Ima(VB^\mathsf{T})$.
+\end{IEEEproof}
+In other words, when starting from an initial condition such that $\eta_0 \Ima(VB^\mathsf{T})$, the dynamics \eqref{eq:primaldualedge} coincide with the dynamics \eqref{eq:plimdroop} mapped to the edge coordinates. 
+
+
+\subsection{Proof of the main result}
+We are now ready to proof our main results.
+
+
+\textit{Proof of Theorem~\ref{thm:GASpowerlimit}:}
+Pick any initial condition $\xi_0=(\theta_0,\lambda_0) \in \mathbb{R}^{n} \times \mathbb{R}^{2n}_{\geq0}$ of \eqref{eq:plimdroop}. Then, it follows from Proposition~\ref{prop:equiv} that $\norm{T_\eta \varphi_\theta(t,\xi_0)}_{\mc S_\eta}=0$ if and only if $\norm{\varphi_\theta(t,\xi_0)}_{\mc S_\theta}=0$. Thus, by the definition of the point to set distance, and the fact that $T_\eta \varphi_\theta(t,\xi_0) \in \Ima(B^\mathsf{T})$, there exist $\kappa_1 \in \mathbb{R}_{\geq 0}$ and $\kappa_2 \in \mathbb{R}_{\geq 0}$ such that 
+\begin{align*}
+    \kappa_1 \norm{\varphi_\theta(t,\xi_0)}_{\mc S_\theta} \leq \norm{T_\eta \varphi_\theta(t,\xi_0)}_{\mc S_\eta}  \leq \kappa_2 \norm{\varphi_\theta(t,\xi_0)}_{\mc S_\theta}.
+\end{align*}
+Moreover, by Lemma~\ref{lem:coincide}, $\norm{\varphi_\eta(t,T_\eta \xi_0)}_{\mc S_\eta}=\norm{T_\eta \varphi_\theta(t,\xi_0)}_{\mc S_\eta}$ and we obtain
+\begin{align}\label{eq:pointsetdistancebound}
+    \!\!\kappa_1\norm{\varphi_\theta(t,\xi_0)}_{\mc S_\theta}\! \leq \norm{\varphi_\eta(t,T_\eta \xi_0)}_{\mc S_\eta}\! \leq \kappa_2 \norm{\varphi_\theta(t,\xi_0)}_{\mc S_\theta}\!. 
+\end{align}
+
+By Theorem~\ref{thm:edgeconvergence}, \eqref{eq:primaldualedge} is GAS on $\mathbb{R}^{e} \times \mathbb{R}^{2n}_{\geq0}$ with respect to $\mc S_\eta$ according to Definition~\ref{def:GAS}. In other words, it holds that $\lim_{t\to\infty} \norm{\varphi_\eta(t,(\eta_0,\lambda_0))}_{\mc S_\eta} = 0$ holds for all $(\eta_0,\lambda_0) \in \mathbb{R}^{e} \times \mathbb{R}^{2n}_{\geq0}$. Considering \eqref{eq:pointsetdistancebound}, this implies that $\lim_{t\to\infty} \norm{\varphi_\theta(t,\xi_0)}_{\mc S_\theta} = 0$ for all $\xi_0 \in \mathbb{R}^{n} \times \mathbb{R}^{2n}_{\geq0}$
+
+
+
+Moreover, for every $\varepsilon \in \mathbb{R}_{>0}$ there exists $\delta \in \mathbb{R}_{>0}$ such that $(\eta_0,\lambda_0) \in \mathbb{R}^{e} \times \mathbb{R}^{2n}_{\geq0}$ and $\norm{(\eta_0,\lambda_0)}_{\mc S_\eta} < \delta$ implies $\norm{\varphi_\eta(t,(\eta_0,\lambda_0))}_{\mc S_\eta} < \varepsilon$ for all $t \in \mathbb{R}_{\geq 0}$. Considering \eqref{eq:pointsetdistancebound} and $(\eta_0,\lambda_0) = T_\eta \xi_0$ ot follows that for every $\varepsilon \in \mathbb{R}_{>0}$ there exists $\delta \in \mathbb{R}_{>0}$ such that $(\eta_0,\lambda_0) \in \mathbb{R}^{e} \times \mathbb{R}^{2n}_{\geq0}$ and $\norm{\xi_0}_{\mc S_\theta} < \kappa_2^{-1}\delta$ implies $\norm{\varphi_\eta(t,\xi_0)}_{\mc S_\theta} < \kappa_1^{-1} \varepsilon$ for all $t \in \mathbb{R}_{\geq 0}$. In other words, \eqref{eq:plimdroop} is globally asymptotically stable on $\mathbb{R}^n \times \mathbb{R}^{2n}_{\geq 0}$ with respect to the set  $\mathcal{S}_{\theta}$ according to Definition~\ref{def:GAS}.
+%
+%\red{Leveraging the decomposition \eqref{eq:coordination_changing} for the dynamics of GFM power-limit control \eqref{eq:plimdroop}, we conclude that the equivalent dynamics for angle differences $\eta$ is pointwise globally asymptotically stable by Theorem 4, where $K = K^\prime_{I}$. The primal-dual dynamics converges to the point $\left(\eta^\star, \lambda^\star\right)$ satisfying KKT conditions of the angle differences DC-PF problem.
+%Moreover, under Assumptions 1 and 2, there exist a vector of phase angles $\theta^\star$ satisfying KKT conditions of absolute angle DC-PF problem. Since Proposition 2 concerns the KKT points by $\left(\eta^\star, \lambda^\star \right) = T \left(\theta^\star, \lambda^\star\right)$, and regarding the first block of transfomration $T$, there exist $\theta^\star$ such that $VB^\mathsf{T} \theta^\star = \eta^\star$. In addition, convergence of $\eta(t)$ to $\eta^\star$ says $VB^\mathsf{T} \lim_{t \to \infty}\theta(t) = \eta^\star$. Therefore $\lim_{t \to \infty} \theta(t) = \theta^\star + c \mathbbl{1}_n$, since by Proposition 1, we know that $\theta^\star + c \mathbbl{1}_n \in \mathcal{S}_{\theta}$ if $\theta^\star$ satisfying the KKT conditions.
+%It establishes that the dynamics of the power-limit droop control is globally asymptotically stable with respect to the set $\mathcal{S}_{\theta}$.}
+
+Finally, we show that $\lim_{t \to \infty} \omega(t) = \mathbbl{1}_n \omega_{s}$. According to Theorem~\ref{thm:edgeconvergence}, any pair $\left(\eta^\star, \lambda^\star\right)$ converges to a KKT point $\left(\eta^\star, \lambda^\star \right) \in \mc S_\eta$, i.e., $\lim_{t \to \infty} \eta(t) = \eta^\star$ and $\lim_{t \to \infty} \ddt \eta=\mathbbl{0}_e$. Using $\eta = V B^\mathsf{T} \theta$, we obtain
+\begin{align*}
+   \lim_{t \to \infty} \ddt V B^\mathsf{T} \theta(t) =  V B^\mathsf{T}  \ddt \theta(t) = \lim_{t \to \infty} VB^\mathsf{T} \omega(t) = 0
+\end{align*}
+and $\lim_{t \to \infty} \omega(t) = \mathbbl{1}_n \omega_{s}$ follows $\ker(B^\mathsf{T})=\vspan(\mathbbl{1}_n)$.
+\hfill $\blacksquare$
+
+%\red{It is worthwhile to note that for the proof of Theorem~\ref{thm:GASpowerlimit}, it is not required to impose strict feasibility by the existence of $\theta$ such that $L\theta + P_{L}$ falls within the lower and upper bounds. Since all the constraints are linear(affine) inequalities, therefore satisfying the boundaries for upper and lower power limits is sufficient to ensure the strong duality.} 
+
+The next result formalizes that, upon convergence to $\mathcal{S}_{\theta}$, if any converter is operating at the upper power limit, no  converter can operate at the upper power limit and vice versa.
+
+\begin{proposition}[\textbf{Mutually exclusive active sets}]\label{prop:activesets}
+    Consider $P_\ell$, $P_u$, $P_L$, and $P^\star$ such that Assumption~\ref{assum:feas} and Assumption~\ref{assum:setpoint} hold.  Then, for all $(\theta,\lambda) \in \mathcal{S}_{\theta}$, either $\mathcal{I}_{\ell} = \emptyset$ or $\mathcal{I}_{u} = \emptyset$.
+\end{proposition}
+\begin{IEEEproof}
+We will proof the results by contradiction. For any KKT point $(\eta^\star, \lambda^\star) \in \mc S_\eta$, it holds that
+\begin{align*}
+    M\left(BV\eta^\star + P_{L} - P^\star\right) + K_I (\lambda^\star_{u} - \lambda^\star_{\ell}) \in \ker(B^\mathsf{T}).
+\end{align*}
+Moreover, $\ker(B^\mathsf{T})\!=\!\vspan(\mathbbl{1}_n)$ and, by complementary slackness, $\lambda^\star_{\ell,i}=0$ and $\lambda^\star_{u,j}=0$ for any $(i,j) \in \mathcal{I}_{u} \times \mathcal{I}_{\ell}$. Thus,
+\begin{align*}
+    m_i\left(P_i -P^\star_{i}\right) &+ \sqrt{k_i}\lambda^\star_{u, i} = m_j\left(P_j -P^\star_{j}\right) - \sqrt{k_j}\lambda^\star_{\ell, j}
+\end{align*} 
+has to hold for all $(i,j) \in \mathcal{I}_{u} \times \mathcal{I}_{\ell}$. By feasibility of $(\eta, \lambda^\star) \in \mathcal{S}_\eta$ and , we have $P_{i} = P_{u, i}$ for all $i \in \mathcal{I}_{u}$ and $P_{j} = P_{\ell, j}$ for all $j \in \mathcal{I}_{\ell}$. Then, dual-feasibility and Assumption~\ref{assum:setpoint} imply that
+\begin{align*}
+m_i\underbrace{\left(P_{u, i}- P_{i}^\star\right)}_{> 0}   + \underbrace{\sqrt{k_i}\lambda^\star_{u, i}}_{\geq 0} = m_i \underbrace{\left(P_{\ell, i} - P_{j}^\star\right)}_{< 0} - \underbrace{\sqrt{k_j}\lambda^\star_{\ell, j}}_{\geq 0},
+\end{align*}
+i.e., no pair $(i,j) \in \mathcal{I}_u \times \mc I_\ell$ can exist if $(\eta^\star, \lambda^\star) \in \mc S_\eta$.
+\end{IEEEproof}
+
+
+\textit{Proof of Theorem~\ref{th:syncfreq}:} By Theorem~\ref{thm:GASpowerlimit}, there exists $(\theta^\star,\lambda^\star) \in \mc S_\theta$ such that
+\begin{align*}
+    \lim_{t \to \infty} \omega(t) =  M \left(P^\star - P_{L} - L \theta^\star \right) - (\alpha \otimes K_I) \lambda^\star = \mathbbl{1}_n \omega_{s}.
+\end{align*}
+%
+Where we have used \eqref{eq:plimdroop:theta} and the fact that $\Pi_{\mathbb{R}^{2n}_{\geq 0}}(g(L\theta^\star))=\mathbbl{0}_{2n}$ for all $(\theta^\star, \lambda^\star) \in \mc S_\theta$. Using $P=L\theta + P_L$ it follows that
+%
+\begin{align}\label{eq:omegas}
+   m^{-1}_i \omega_{s} = P^\star_i - P_i + m_i^{-1} \sqrt{k_i}(\lambda^\star_{\ell,i} - \lambda^\star_{u,i}), \; \forall i \in \mc N.
+\end{align}
+%
+Since $\lambda^\star_{u,i}=\lambda^\star_{\ell,i}=0$ for all $i\notin \mc I_u \cup \mc I_\ell$, we obtain
+\begin{align}\label{eq:freqbalance}
+     \sum\nolimits_{i\notin \mc I_u \cup \mc I_\ell}  m^{-1}_i \omega_{s} = \sum\nolimits_{i\notin \mc I_u \cup \mc I_\ell} P^\star_i - \sum\nolimits_{i\notin \mc I_u \cup \mc I_\ell}  P_i.
+\end{align}
+%
+Moreover, considering $\mathbbl{1}^\mathsf{T}_n (L \theta - P_L) = \mathbbl{1}^\mathsf{T}_n P_L$ it follows that $\sum_{i \in \mc N} P_i = \sum_{i \in \mc N} P_{L,i}$ and
+\begin{align*}
+    \sum\nolimits_{i \notin \mc I_u \cup \mc I_\ell} P_i + \sum\nolimits_{i \in \mc I_\ell} P_{\ell,i} + \sum\nolimits_{i \in \mc I_u} P_{u,i}   = \sum\nolimits_{i \in \mc N} P_{L,i}.
+\end{align*}
+Solving for $\sum_{i \notin \mc I_u \cup \mc I_\ell} P_i$ and substituting into \eqref{eq:freqbalance}, results in
+\begin{align*}
+    \sum_{i \notin \mathcal{I}_{u} \cup \mathcal{I}_{\ell}}\! m_{i}^{-1} \omega_{s} \!= \!\sum_{i \notin \mathcal{I}_{u} \cup \mathcal{I}_{\ell}}\! P^\star_i + \sum_{i \in \mathcal{I}_{u}}\! P_{u, i} + \sum_{i \in \mathcal{I}_{\ell}}\! P_{\ell, i} - \sum_{i \in \mc N}\! P_{L,i}
+\end{align*}
+and
+\begin{align}
+    &\omega_s =\frac{\sum_{i \notin \mathcal{I}_{u} \cup \mathcal{I}_{\ell}} \! P_i^\star+ \sum_{i \in \mathcal{I}_u}\! P_{u, i}+\sum_{i \in \mathcal{I}_\ell} \! P_{\ell, i}-\sum_{i \in \mathcal{N}}\! P_{L, i}}{\sum_{i \notin \mathcal{I}_{u} \cup \mathcal{I}_{\ell}}\! m_i^{-1}}. \label{eq:omega_iliu}
+\end{align}
+
+To show \ref{th:syncfreq:lower}, consider $\mathcal{I}_{\ell} \neq \emptyset$. Then, by Proposition~\ref{prop:activesets}, $\mathcal{I}_{u} = \emptyset$. Moreover, (i) $\lambda_{\ell, i} \geq 0$ by dual feasibility, (ii) $\lambda_{u, i} = 0$ by complementary slackness, and (iii) $P^\star_i - P_{\ell, i} >0$ for all $\forall i \in \mc N$ by Assumption~\ref{assum:setpoint}. Then \eqref{eq:omegas} results in
+\begin{align*}
+    \omega_s = \omega_i = m_i (P^\star_i - P_{\ell, i}) + \sqrt{k_i} (\lambda_{\ell, i} - \lambda_{u,i}) >0, \; \forall i \in \mathcal{I}_{\ell},
+\end{align*}
+i.e., $\omega_s>0$ holds. Moreover, \eqref{eq:omega_iliu} and $\mc I_u=\emptyset$ imply that
+\begin{align*}
+    \sum\nolimits_{i \notin \mathcal{I}_{\ell}}  P_i^\star+\sum\nolimits_{i \in \mathcal{I}_\ell}  P_{\ell, i}-\sum\nolimits_{i \in \mathcal{N}} P_{L, i} >0.
+\end{align*}
+Moreover, Assumption~\ref{assum:feas} implies $\sum_{i \in \mathcal{I}_\ell} \! P_{\ell, i} < \sum_{i \in \mathcal{I}_\ell} \! P^\star_i$, i.e.,
+\begin{align*}
+    &\sum_{i \in \mc N} \! P_i^\star-\sum_{i \in \mathcal{N}}\! P_{L, i} > \sum_{i \notin \mathcal{I}_{\ell}} \! P_i^\star+\sum_{i \in \mathcal{I}_\ell} \! P_{\ell, i}-\sum_{i \in \mathcal{N}}\! P_{L, i} >0,
+\end{align*}
+i.e., $\sum_{i \in \mathcal{N}}\! P_{L, i}<\sum_{i \in \mc N} \! P_i^\star$. Assuming from $\mathcal{I}_{u} \neq \emptyset$ and applying the same steps used for showing \ref{th:syncfreq:lower} establishes \ref{th:syncfreq:higher}.
+
+%Proof for the converse statement is commented out for reasons of space. Included here for completeness and in case we need it later.
+%Next, consider $\mathcal{I}_{u} \neq \emptyset$. Then, by Proposition~\ref{prop:activesets}, $\mathcal{I}_{\ell} = \emptyset$. Moreover, (i) $\lambda_{u, i} \geq 0$ by dual feasibility, (ii) $\lambda_{\ell, i} = 0$ by complementary slackness, and (iii)$P^\star_i - P_{\ell, i} >0$ for all $\forall i \in \mc N$ by Assumption~\ref{assum:setpoint}. Then \eqref{eq:omegas} results in
+% \begin{align*}
+%     \omega_s = \omega_i = m_i (P^\star_i - P_{u, i}) + \lambda_{\ell, i} - \lambda_{u,i} <0, \quad \forall i \in \mathcal{I}_{u},
+% \end{align*}
+% i.e., $\omega_s<0$ holds. Moreover, \eqref{eq:omega_iliu} and $\mc I_\ell=\emptyset$ imply that
+% \begin{align*}
+%     \sum\nolimits_{i \notin \mathcal{I}_{u}}  P_i^\star+\sum\nolimits_{i \in \mathcal{I}_u}  P_{u, i}-\sum\nolimits_{i \in \mathcal{N}} P_{L, i} <0.
+% \end{align*}
+% Moreover, Assumption~\ref{assum:feas} implies $\sum_{i \in \mathcal{I}_\ell} \! P_{u, i} > \sum_{i \in \mathcal{I}_\ell} \! P^\star_i$, i.e.,
+% \begin{align*}
+%     &\sum_{i \in \mc N} \! P_i^\star-\sum_{i \in \mathcal{N}}\! P_{L, i} < \sum_{i \notin \mathcal{I}_u} \! P_i^\star+\sum_{i \in \mathcal{I}_u} \! P_{u, i}-\sum_{i \in \mathcal{N}}\! P_{L, i} <0,
+% \end{align*}
+% i.e., $\sum_{i \in \mathcal{N}}\! P_{L, i}>\sum_{i \in \mc N} \! P_i^\star$.
+
+It remains to show \ref{th:syncfreq:equal}. To this end, assume that $\mathcal{I}_{\ell} = \emptyset$. Using $\sum_{i \in \mc N} P_{L,i} = \sum_{i \in \mc N} P^\star_i$, the synchronous frequency reduces to 
+\begin{align*}
+    \omega_{s} = \frac{\Sigma_{i \in \mathcal{I}_{u}}P_{u, i} - P^\star_{i}}{\Sigma_{i \notin \mathcal{I}_{u}} m_{i}^{-1}} > 0.
+\end{align*}
+However, (i) $\lambda^\star_{u,i}\geq 0$ by primal feasibility, (ii) $\lambda^\star_{\ell,i}=0$, by complementary slackness, and (iii) $P^\star_i - P_{u, i}<0$ for all $i \in \mc N$ by Assumption~\ref{assum:setpoint}. This results in 
+\begin{align*}
+\omega_s = \omega_i = m_i\left(P^\star_i - P_{u, i}\right) - \sqrt{k_i}\lambda_{u, i} < 0, \quad \forall i \in \mathcal{I}_{u},
+\end{align*}
+and it follows that $\mathcal{I}_{u} = \mathcal{I}_{\ell} = \emptyset$. Following the same steps for $\mathcal{I}_u = \emptyset$ and $\sum_{i \in \mc N} P_{L,i} = \sum_{i \in \mc N} P^\star_i$ shows that $\mathcal{I}_\ell = \emptyset$ has to hold. The Theorem follows by noting that either $\mc I_u=\emptyset$ or $\mc I_\ell=\emptyset$ by Proposition~\ref{prop:activesets}. \hfill $\blacksquare$
+
+\textit{Proof of Corollary~\ref{cor:activesets}:} Statement~\ref{cor:activesets:ellu} and statement~\ref{cor:activesets:uell} are direct consequences of Proposition~\ref{prop:activesets} and the proof of Theorem~\ref{th:syncfreq}. Statement~\ref{cor:activesets:lowload} can be shown by contradiction. In particular, $\sum_{i \in \mc N} P_{L,i} < \sum_{i \in \mc N} P^\star_i$ implies $\omega_s>0$. However, per the proof of Theorem~\ref{th:syncfreq}, if there exists $i \in \mc I_u \neq \emptyset$, then $\omega_s<0$. Thus, $\mc I_u = \emptyset$ has to hold. Statement~\ref{cor:activesets:highload} follows by noting that $\sum_{i \in \mc N} P_{L,i} > \sum_{i \in \mc N} P^\star_i$ implies $\omega_s<0$. However, per the proof of Theorem~\ref{th:syncfreq}, if there exists $i \in \mc I_\ell \neq \emptyset$, then $\omega_s>0$. Thus, $\mc I_\ell = \emptyset$ has to hold. \hfill $\blacksquare$
+
+ 
+
+\bibliographystyle{IEEEtran}
+\bibliography{IEEEabrv,Amirhossein}
+
+\end{document}
